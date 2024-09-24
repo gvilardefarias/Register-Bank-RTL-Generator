@@ -35,7 +35,6 @@ class CSV_parser(input_parser):
             except:
                 addrMap[row['Register Address']] = [row]
 
-
         for reg_addr in addrMap:
             reg_name = None
 
