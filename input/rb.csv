@@ -1,0 +1,10 @@
+Register Address,Register Name,Bit Name,Position Bit,Access,From Controller,To Controller,Functional Description
+0,addr,TBA,31,R W,0,1,Type of adrress
+0,addr,reserved,30:7,R,0,0,
+0,addr,SLVADDR,6:0,R W,0,1,Slave address
+4,status,REC,2,R,0,1,Byte received
+4,status,TRA,1,R WC,1,0,Byte transmited
+4,status,NAK,0,R WC,0,0,Nack response
+8,mask,RECE,2,R W,0,0,Byte received Mask
+8,mask,TRAE,1,R W,0,0,Byte transmited Mask
+8,mask,NAKE,0,R W,0,0,Nack response Mask

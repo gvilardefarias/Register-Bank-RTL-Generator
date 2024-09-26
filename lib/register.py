@@ -2,10 +2,11 @@ class Register():
     def __init__(self, address, name):
         self.address = address
         self.name = name
-        self.bits = set() 
+        self.bits = []
     
     def add_bit(self, bit):
-        self.bits.add(bit)
+        self.bits.append(bit)
+        self.bits.sort()
     
     def all_write(self):
         for bit in self.bits:
@@ -47,6 +48,9 @@ class Bit():
 
     def __eq__(self, obj):
         return (self.pos[-1] == obj.pos[-1])
+    
+    def __hash__(self):
+        return hash(self.name)
 
 class FlipFlop():
     def __init__(self, name = "", reset = "", body = ""):
@@ -64,16 +68,15 @@ class FlipFlop():
         self.body += body_line
 
     def gen_sv_code(self):
-        self.sv_code  = "  // " + self.name
+        self.sv_code  = "  // " + self.name + "\n"
         self.sv_code += "  always_ff @(posedge HCLK, negedge HRESETn) begin\n"
         self.sv_code += "    if(!HRESETn) begin\n" 
         self.sv_code += self.reset
         self.sv_code += "    end\n    else begin\n"
-        self.sv_code += "      if (i_PSEL && i_PENABLE && i_PWRITE) begin\n        case (i_PADDR)\n"
         self.sv_code += self.body
         self.sv_code += "        endcase\n      end\n    end\n  end\n"
 
         return self.sv_code
     
     def __str__(self):
-        return self.gen_sv_code
+        return self.gen_sv_code()

@@ -1,0 +1,3 @@
+`define ADDRESS_ADDR  12'd0
+`define ADDRESS_STATUS  12'd4
+`define ADDRESS_MASK  12'd8

@@ -1,9 +1,10 @@
-from input_parser import CSV_parser
-from io_protocol import APB_protocol
+from lib.input_parser import CSV_parser
+from lib.io_protocol import APB_protocol
 
 class RB_generator():
-    def __init__(self, input_file_name, parser = None, io_protocol = None, name = "register_bank"):
+    def __init__(self, input_file_name, parser = None, io_protocol = None, registers = None, name = "register_bank"):
         self.name = name
+        self.registers = registers
 
         if parser == None:
             self.parser = CSV_parser(input_file_name)
@@ -21,25 +22,36 @@ class RB_generator():
         self.parser.open_input_file()
 
         self.registers = self.parser.create_registers()
+
+        self.io_protocol.set_registers(self.registers)
     
     def gen_IO(self):
         self.IO  = ""
         for reg in self.registers:
             for bit in reg.bits:
                 if bit.from_cont:
-                    strSize = "[" + str(bit.pos[1] - bit.pos[0]) + ":0]"
-                    self.IO += "   input  logic " +(20-len(strSize))*" " + strSize + "i_" + bit.name.lower() + ",\n" 
+                    if len(bit.pos) == 1:
+                        self.IO += "  input  logic " + 20*" " + "i_" + bit.name.lower() + ",\n" 
+                    else:
+                        strSize = "[" + str(bit.pos[0] - bit.pos[1]) + ":0]"
+                        self.IO += "  input  logic " +(20-len(strSize))*" " + strSize + "i_" + bit.name.lower() + ",\n" 
+        
+        if self.IO != "":
+            self.IO += "\n"
 
         for reg in self.registers:
             for bit in reg.bits:
                 if bit.to_cont:
-                    strSize = "[" + str(bit.pos[1] - bit.pos[0]) + ":0]"
-                    self.IO += "  output  logic " +(20-len(strSize))*" " + strSize + "o_" + bit.name.lower() + ",\n" 
+                    if len(bit.pos) == 1:
+                        self.IO += "  output  logic " + 20*" " + "o_" + bit.name.lower() + ",\n" 
+                    else:
+                        strSize = "[" + str(bit.pos[0] - bit.pos[1]) + ":0]"
+                        self.IO += "  output  logic " +(20-len(strSize))*" " + strSize + "o_" + bit.name.lower() + ",\n" 
 
         if self.IO != "":
-            self.IO = "   // Controller IO\n" + self.IO[:-2]
+            self.IO = "  // Controller IO\n" + self.IO[:-2]
         
-        self.IO = self.io_protocol.gen_IO + "\n\n" + self.IO
+        self.IO = self.io_protocol.gen_IO() + "\n\n" + self.IO
         
         return self.IO
 
@@ -87,7 +99,7 @@ class RB_generator():
         return self.params
 
     def gen_signals(self):
-        self.signals = ""
+        self.signals = "  // Register definitions\n"
 
         for reg in self.registers:
             self.signals += "  struct packed {\n"
@@ -109,7 +121,7 @@ class RB_generator():
                     self.assigns += "  assign o_" + bit.name.lower() + " = r_" + reg.name + "." + bit.name + ";\n"
 
         if self.assigns != "":
-            self.assigns = "  \\ To controller\n" + self.assigns
+            self.assigns = "  // To controller\n" + self.assigns + "\n"
         
         self.assigns += self.io_protocol.gen_assigns()
 
@@ -118,9 +130,9 @@ class RB_generator():
     def gen_sv_code(self):
         self.sv_code  = "module " + self.name + " #(\n"
         self.sv_code += self.gen_params() + "\n)\n(\n"
-        self.sv_code += self.gen_IO() + ");\n"
+        self.sv_code += self.gen_IO() + "\n);\n\n"
         self.sv_code += self.gen_signals() + "\n"
-        self.sv_code += self.gen_write_logic() + "\n"
+        self.sv_code += str(self.gen_write_logic()) + "\n"
         self.sv_code += self.gen_read_logic() + "\n"
         self.sv_code += self.gen_assigns() + "\n"
         self.sv_code += "endmodule"
@@ -138,5 +150,8 @@ class RB_generator():
         sv_f.close()
 
     def gen_rb(self):
+        if self.registers == None:
+            self.parser_input()
+
         self.gen_define_file()
         self.gen_sv_file()

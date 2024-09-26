@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
-from register import Register, Bit
 import csv
+from lib.register import Register, Bit
 
 class Input_parser(ABC):
     def __init__(self, file_name):
-        self.file_name = "input/"  + file_name
-        self.registers = None
+        self.file_name = "input/"  + file_name + ".csv"
+        self.registers = []
 
     def set_file_name(self, file_name):
-        self.file_name = "input/"  + file_name
+        self.file_name = "input/"  + file_name + ".csv"
 
     @abstractmethod
     def open_input_file(self):
@@ -26,7 +26,6 @@ class CSV_parser(Input_parser):
     def open_input_file(self):
         input_file = open(self.file_name)
         self.csvDict = csv.DictReader(input_file)
-        input_file.close()
 
     def create_registers(self):
         # Group registers by address
@@ -49,7 +48,10 @@ class CSV_parser(Input_parser):
                     register = Register(reg_addr, reg_name)
 
                 pos = row['Position Bit'].split(":")
-                pos = [int(pos[0]), int(pos[1])]
+                if len(pos) == 1:
+                    pos = [int(pos[0])]
+                else:
+                    pos = [int(pos[0]), int(pos[1])]
 
                 access_type = row['Access'].split(' ')
 
