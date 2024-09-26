@@ -8,7 +8,7 @@ class Register():
         self.bits.append(bit)
         self.bits.sort()
     
-    def all_write(self):
+    def only_write(self):
         for bit in self.bits:
             if 'R' in bit.access_type or 'WC' in bit.access_type:
                 return False
@@ -16,6 +16,13 @@ class Register():
         return True
 
     def all_read(self):
+        for bit in self.bits:
+            if not 'R' in bit.access_type:
+                return False
+
+        return True
+
+    def only_read(self):
         for bit in self.bits:
             if 'W' in bit.access_type or 'WC' in bit.access_type:
                 return False
