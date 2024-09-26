@@ -31,10 +31,10 @@ class RB_generator():
             for bit in reg.bits:
                 if bit.from_cont:
                     if len(bit.pos) == 1:
-                        self.IO += "  input  logic " + 20*" " + "i_" + bit.name.lower() + ",\n" 
+                        self.IO += "  input  logic " + 21*" " + "i_" + bit.name.lower() + ",\n" 
                     else:
-                        strSize = "[" + str(bit.pos[0] - bit.pos[1]) + ":0]"
-                        self.IO += "  input  logic " +(20-len(strSize))*" " + strSize + "i_" + bit.name.lower() + ",\n" 
+                        strSize = "[" + str(bit.pos[0] - bit.pos[1]) + ":0] "
+                        self.IO += "  input  logic " + (21-len(strSize))*" " + strSize + "i_" + bit.name.lower() + ",\n" 
         
         if self.IO != "":
             self.IO += "\n"
@@ -43,10 +43,10 @@ class RB_generator():
             for bit in reg.bits:
                 if bit.to_cont:
                     if len(bit.pos) == 1:
-                        self.IO += "  output  logic " + 20*" " + "o_" + bit.name.lower() + ",\n" 
+                        self.IO += "  output logic " + 21*" " + "o_" + bit.name.lower() + ",\n" 
                     else:
-                        strSize = "[" + str(bit.pos[0] - bit.pos[1]) + ":0]"
-                        self.IO += "  output  logic " +(20-len(strSize))*" " + strSize + "o_" + bit.name.lower() + ",\n" 
+                        strSize = "[" + str(bit.pos[0] - bit.pos[1]) + ":0] "
+                        self.IO += "  output logic " + (21-len(strSize))*" " + strSize + "o_" + bit.name.lower() + ",\n" 
 
         if self.IO != "":
             self.IO = "  // Controller IO\n" + self.IO[:-2]

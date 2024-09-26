@@ -17,11 +17,11 @@ module register_bank #(
   output logic                      o_PSLVERR
 
   // Controller IO
-  input  logic                     i_tra,
+  input  logic                      i_tra,
 
-  output  logic                [6:0]o_slvaddr,
-  output  logic                     o_tba,
-  output  logic                     o_rec
+  output logic                [6:0] o_slvaddr,
+  output logic                      o_tba,
+  output logic                      o_rec
 );
 
   // Register definitions
