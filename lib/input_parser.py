@@ -4,7 +4,7 @@ import csv
 
 class Input_parser(ABC):
     def __init__(self, file_name):
-        self.file_name = ¨input/¨  + file_name
+        self.file_name = "input/"  + file_name
         self.registers = None
 
     @abstractmethod
@@ -40,7 +40,7 @@ class CSV_parser(input_parser):
 
             for row in addrMap[reg_addr]:
                 # Create Register if it doesnt exist
-                if register_name == None:
+                if reg_name == None:
                     reg_name = row['Register Name']
 
                     register = Register(reg_addr, reg_name)
@@ -49,11 +49,14 @@ class CSV_parser(input_parser):
                 pos = [int(pos[0]), int(pos[1])]
 
                 access_type = row['Access'].split(' ')
+
+                from_cont = row["From Controller"]
+                to_cont = row["To Controller"]
           
                 bit_name = row['Bit Name']
                 bit_description = row['Functional Description']
 
-                bit = Bit(bit_name, access_type, pos, bit_description)
+                bit = Bit(bit_name, access_type, pos, from_cont, to_cont, bit_description)
 
                 register.add_bit(bit)
             

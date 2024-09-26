@@ -1,27 +1,28 @@
 from abc import ABC, abstractmethod
+from register import FlipFlop
 
 class IO_protocol(ABC):
     def __init__(self, registers):
         self.registers(registers)
 
     @abstractmethod
-    def gen_io():
+    def gen_io(self):
         pass
 
     @abstractmethod
-    def gen_read_ff():
+    def gen_defines(self):
         pass
 
     @abstractmethod
-    def gen_write_ff():
+    def gen_read_logic(self):
         pass
 
     @abstractmethod
-    def gen_assigns():
+    def gen_write_logic(self):
         pass
 
     @abstractmethod
-    def gen_signals():
+    def gen_assigns(self):
         pass
 
 
@@ -32,42 +33,65 @@ class APB_protocol(IO_protocol):
 
         super().__init__(registers)
 
-    def gen_io():
+    def gen_defines(self):
+        self.defines += "  APB_ADDR_WIDTH = " + str(self.addr_width) + ",\n"
+        self.defines += "  APB_DATA_WIDTH = " + str(self.data_width)
 
-    def gen_read_ff():
+        return self.defines
 
-    def gen_write_ff():
-        # Header
-        self.writeFf  = "  always_ff @(posedge HCLK, negedge HRESETn) begin\n"
-        self.writeFf += "    if(!HRESETn) begin\n" 
+    def gen_io(self):
+        self.IO  = "   // APB IO\n"
+        self.IO += "   input  logic                      HCLK,\n"
+        self.IO += "   input  logic                      HRESETn,\n"
+        self.IO += "   input  logic [APB_ADDR_WIDTH-1:0] i_PADDR,\n"
+        self.IO += "   input  logic [APB_DATA_WIDTH-1:0] i_PWDATA,\n"
+        self.IO += "   input  logic                      i_PWRITE,\n"
+        self.IO += "   input  logic                      i_PSEL,\n"
+        self.IO += "   input  logic                      i_PENABLE,\n"
+        self.IO += "   \n"
+        self.IO += "   output logic [APB_DATA_WIDTH-1:0] o_PRDATA,\n"
+        self.IO += "   output logic                      o_PREADY,\n"
+        self.IO += "   output logic                      o_PSLVERR"
 
-        writeOp = ''
-        for register in registers:
+        return self.IO
+
+    def gen_read_logic(self, readFf = None):
+        self.read_logic += "  always_comb begin\n    case (s_apb_addr)\n"
+
+        for register in self.registers:
+            self.read_logic += "      `ADDRESS_" + register.name.upper() +":\n"
+            self.read_logic += "        o_PRDATA = r_" + register.name + ";\n"
+
+        self.read_logic += "      default:\n        o_PRDATA = 'h0;\n"
+        self.read_logic += "    endcase\n  end\n"
+
+        return self.read_logic
+
+    def gen_write_logic(self, write_logic = None):
+        if write_logic != None:
+            self.write_logic  = FlipFlop("Write FlipFlop")
+
+        for register in self.registers:
             # Reset
-            self.writeFf += "      r_" + register.name + " <= 'h0;\n"
+            self.write_logic.add_reset_SVline("      r_" + register.name + " <= 'h0;\n")
 
             # Bit write operation
             if register.all_write():
-                writeOp += "          `ADDRESS_" + register.name.upper() +":"
-                writeOp += "\n            r_" + register.name + " <= i_PWDATA;\n"
+                self.write_logic.add_back_body_SVline("          `ADDRESS_" + register.name.upper() +":")
+                self.write_logic.add_back_body_SVline("\n            r_" + register.name + " <= i_PWDATA;\n")
             elif not register.all_read():
-                writeOp += "          `ADDRESS_" + register.name.upper() +":"
-                writeOp += " begin\n"
-                for bit in registers.bits:
-                    if 'WC' in access:
-                        writeOp += "            r_" + register.name + "[" + bit.get_pos() + "] <= i_PWDATA[" + bit.get_pos() + "] ? 1'b0:r_" + register.name + "[" + bit.get_pos() + "];\n"
-                    elif 'W' in access:
-                        writeOp += "            r_" + register.name + "[" + bit.get_pos() + "] <= i_PWDATA[" + bit.get_pos() + "];\n"
-                writeOp += "          end\n"
+                self.write_logic.add_back_body_SVline("          `ADDRESS_" + register.name.upper() +":")
+                self.write_logic.add_back_body_SVline(" begin\n")
+                for bit in register.bits:
+                    if 'WC' in bit.access:
+                        self.write_logic.add_back_body_SVline("            r_" + register.name + "[" + bit.get_pos() + "] <= i_PWDATA[" + bit.get_pos() + "] ? 1'b0:r_" + register.name + "[" + bit.get_pos() + "];\n")
+                    elif 'W' in bit.access:
+                        self.write_logic.add_back_body_SVline("            r_" + register.name + "[" + bit.get_pos() + "] <= i_PWDATA[" + bit.get_pos() + "];\n")
+                self.write_logic.add_back_body_SVline("          end\n")
         
-        self.writeFf += "    end\n    else begin\n"
-        # Flipflop body
-        self.writeFf += "      if (i_PSEL && i_PENABLE && i_PWRITE) begin\n        case (i_PADDR)\n"
-        self.writeFf += writeOp
-        self.writeFf += "        endcase\n      end\n    end\n  end\n"
+        return self.write_logic
 
-        return writeFf
+    def gen_assigns(self):
+        self.assigns = "  assign PREADY  = 1'b1;\n  assign PSLVERR = 1'b0;\n\n"
 
-    def gen_assigns():
-
-    def gen_signals():
+        return self.assigns
