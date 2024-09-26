@@ -2,15 +2,18 @@ from abc import ABC, abstractmethod
 from register import FlipFlop
 
 class IO_protocol(ABC):
-    def __init__(self, registers):
-        self.registers(registers)
+    def __init__(self, registers = None):
+        self.registers = registers
+
+    def set_registers(self, registers):
+        self.registers = registers
 
     @abstractmethod
-    def gen_io(self):
+    def gen_IO(self):
         pass
 
     @abstractmethod
-    def gen_defines(self):
+    def gen_params(self):
         pass
 
     @abstractmethod
@@ -27,19 +30,19 @@ class IO_protocol(ABC):
 
 
 class APB_protocol(IO_protocol):
-    def __init__(self, registers, addr_width = 12, data_width = 32):
+    def __init__(self, registers = None, addr_width = 12, data_width = 32):
         self.addr_width = addr_width
         self.data_width = data_width
 
         super().__init__(registers)
 
-    def gen_defines(self):
+    def gen_params(self):
         self.defines += "  APB_ADDR_WIDTH = " + str(self.addr_width) + ",\n"
         self.defines += "  APB_DATA_WIDTH = " + str(self.data_width)
 
         return self.defines
 
-    def gen_io(self):
+    def gen_IO(self):
         self.IO  = "   // APB IO\n"
         self.IO += "   input  logic                      HCLK,\n"
         self.IO += "   input  logic                      HRESETn,\n"

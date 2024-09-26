@@ -4,18 +4,18 @@ class Register():
         self.name = name
         self.bits = set() 
     
-    def add_bit(bit):
+    def add_bit(self, bit):
         self.bits.add(bit)
     
-    def all_write():
-        for bit in bits:
+    def all_write(self):
+        for bit in self.bits:
             if 'R' in bit.access_type or 'WC' in bit.access_type:
                 return False
         
         return True
 
-    def all_read():
-        for bit in bits:
+    def all_read(self):
+        for bit in self.bits:
             if 'W' in bit.access_type or 'WC' in bit.access_type:
                 return False
         
@@ -64,10 +64,16 @@ class FlipFlop():
         self.body += body_line
 
     def gen_sv_code(self):
-        self.sv_code  = "  always_ff @(posedge HCLK, negedge HRESETn) begin\n"
+        self.sv_code  = "  // " + self.name
+        self.sv_code += "  always_ff @(posedge HCLK, negedge HRESETn) begin\n"
         self.sv_code += "    if(!HRESETn) begin\n" 
         self.sv_code += self.reset
         self.sv_code += "    end\n    else begin\n"
         self.sv_code += "      if (i_PSEL && i_PENABLE && i_PWRITE) begin\n        case (i_PADDR)\n"
         self.sv_code += self.body
         self.sv_code += "        endcase\n      end\n    end\n  end\n"
+
+        return self.sv_code
+    
+    def __str__(self):
+        return self.gen_sv_code

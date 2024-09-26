@@ -7,6 +7,9 @@ class Input_parser(ABC):
         self.file_name = "input/"  + file_name
         self.registers = None
 
+    def set_file_name(self, file_name):
+        self.file_name = "input/"  + file_name
+
     @abstractmethod
     def open_input_file(self):
         pass
@@ -16,7 +19,7 @@ class Input_parser(ABC):
         pass
 
 
-class CSV_parser(input_parser):
+class CSV_parser(Input_parser):
     def __init__(self, file_name):
         super().__init__(file_name)
 
@@ -50,8 +53,8 @@ class CSV_parser(input_parser):
 
                 access_type = row['Access'].split(' ')
 
-                from_cont = row["From Controller"]
-                to_cont = row["To Controller"]
+                from_cont = int(row["From Controller"])
+                to_cont = int(row["To Controller"])
           
                 bit_name = row['Bit Name']
                 bit_description = row['Functional Description']
@@ -61,3 +64,5 @@ class CSV_parser(input_parser):
                 register.add_bit(bit)
             
             self.registers.append(register)
+    
+        return self.registers
