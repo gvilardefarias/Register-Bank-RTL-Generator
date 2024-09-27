@@ -2,11 +2,14 @@ class Register():
     def __init__(self, address, name):
         self.address = address
         self.name = name
+        self.size = 0
         self.bits = []
     
     def add_bit(self, bit):
+        self.size += bit.size
+
         self.bits.append(bit)
-        self.bits.sort()
+        self.bits.sort(reverse=True)
     
     def only_write(self):
         for bit in self.bits:
@@ -37,6 +40,11 @@ class Bit():
         self.from_cont = from_cont
         self.to_cont = to_cont
         self.description = description
+
+        if len(pos) == 1:
+            self.size = 1
+        else:
+            self.size = pos[0] - pos[1] + 1
 
     def get_pos(self):
         return ':'.join(str(i) for i in self.pos)
@@ -81,7 +89,7 @@ class FlipFlop():
         self.sv_code += self.reset
         self.sv_code += "    end\n    else begin\n"
         self.sv_code += self.body
-        self.sv_code += "        endcase\n      end\n    end\n  end\n"
+        self.sv_code += "    end\n  end\n"
 
         return self.sv_code
     

@@ -4,3 +4,5 @@
 `define ADDRESS_DT_RCV  12'd12
 `define ADDRESS_DT_TRA  12'd16
 `define ADDRESS_DT_MX  12'd20
+`define ADDRESS_WRITE_REG  12'd24
+`define ADDRESS_READ_REG  12'd28

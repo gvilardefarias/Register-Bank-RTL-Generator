@@ -33,7 +33,7 @@ class RB_generator():
                     if len(bit.pos) == 1:
                         self.IO += "  input  logic " + 21*" " + "i_" + bit.name.lower() + ",\n" 
                     else:
-                        strSize = "[" + str(bit.pos[0] - bit.pos[1]) + ":0] "
+                        strSize = "[" + str(bit.size - 1) + ":0] "
                         self.IO += "  input  logic " + (21-len(strSize))*" " + strSize + "i_" + bit.name.lower() + ",\n" 
         
         if self.IO != "":
@@ -45,13 +45,13 @@ class RB_generator():
                     if len(bit.pos) == 1:
                         self.IO += "  output logic " + 21*" " + "o_" + bit.name.lower() + ",\n" 
                     else:
-                        strSize = "[" + str(bit.pos[0] - bit.pos[1]) + ":0] "
+                        strSize = "[" + str(bit.size - 1) + ":0] "
                         self.IO += "  output logic " + (21-len(strSize))*" " + strSize + "o_" + bit.name.lower() + ",\n" 
 
         if self.IO != "":
             self.IO = "  // Controller IO\n" + self.IO[:-2]
         
-        self.IO = self.io_protocol.gen_IO() + "\n\n" + self.IO
+        self.IO = self.io_protocol.gen_IO() + ",\n\n" + self.IO
         
         return self.IO
 
@@ -70,18 +70,18 @@ class RB_generator():
         for reg in self.registers:
             for bit in reg.bits:
                 if bit.from_cont:
-                    if bit.access_type == "WC":
+                    if "WC" in bit.access_type:
                         wc_write += "      if(i_" + bit.name.lower() + ")\n"
                         wc_write += "        r_" + reg.name + "." + bit.name + " <= i_" + bit.name.lower() + ";\n"
                     else:
                         n_write += "      r_" + reg.name + "." + bit.name + " <= i_" + bit.name.lower() + ";\n"
 
         if n_write != "":
-            self.write_logic = n_write + "\n"
+            self.write_logic = "\n" + n_write + "\n"
         if wc_write != "":
             self.write_logic += wc_write + "\n"
         
-        self.writeFf.add_front_body_SVline(self.write_logic)
+        self.writeFf.add_back_body_SVline(self.write_logic)
 
         return self.writeFf
 
@@ -107,7 +107,7 @@ class RB_generator():
                 if len(bit.pos) == 1:
                     self.signals += "    logic       " + bit.name + ";  //" + bit.description + "\n"
                 else:
-                    self.signals += "    logic [" + str(bit.pos[0]-bit.pos[1]) + ":0] " + bit.name + ";  //" + bit.description + "\n"
+                    self.signals += "    logic [" + str(bit.size - 1) + ":0] " + bit.name + ";  //" + bit.description + "\n"
             self.signals += "  } r_" + reg.name + ";\n\n"
         
         return self.signals

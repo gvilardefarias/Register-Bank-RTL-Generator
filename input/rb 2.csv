@@ -16,3 +16,5 @@ Register Address,Register Name,Bit Name,Position Bit,Access,From Controller,To C
 16,dt_tra,BYTE_0,7:0,R,0,0,Byte to be transmitted
 20,dt_mx,BYTE_1,15:8,W,0,0,Byte write
 20,dt_mx,BYTE_0,7:0,R,0,0,Byte read
+24,write_reg,data,31:0,W,0,0,Data
+28,read_reg,data,31:0,R,0,0,Data

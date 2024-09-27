@@ -59,7 +59,7 @@ class APB_protocol(IO_protocol):
         return self.IO
 
     def gen_read_logic(self):
-        self.read_logic = "  // Read logic\n  always_comb begin\n    case (s_apb_addr)\n"
+        self.read_logic = "  // Read logic\n  always_comb begin\n    case (i_PADDR)\n"
 
         for register in self.registers:
             if not register.only_write():
@@ -73,9 +73,6 @@ class APB_protocol(IO_protocol):
                         if "R" in bit.access_type:
                             self.read_logic += "        o_PRDATA[" + bit.get_pos() + "]" + " = r_" + register.name + "." + bit.name + ";\n"
                     self.read_logic += "      end\n"
-
-
-
         self.read_logic += "      default:\n        o_PRDATA = 'h0;\n"
         self.read_logic += "    endcase\n  end\n"
 
@@ -92,7 +89,7 @@ class APB_protocol(IO_protocol):
             self.write_logic.add_reset_SVline("      r_" + register.name + " <= 'h0;\n")
 
             # Bit write operation
-            if register.only_write():
+            if register.only_write() and register.size == self.data_width:
                 self.write_logic.add_back_body_SVline("          `ADDRESS_" + register.name.upper() +":")
                 self.write_logic.add_back_body_SVline("\n            r_" + register.name + " <= i_PWDATA;\n")
             elif not register.only_read():
@@ -104,10 +101,11 @@ class APB_protocol(IO_protocol):
                     elif 'W' in bit.access_type:
                         self.write_logic.add_back_body_SVline("            r_" + register.name + "." + bit.name + " <= i_PWDATA[" + bit.get_pos() + "];\n")
                 self.write_logic.add_back_body_SVline("          end\n")
-        
+        self.write_logic.add_back_body_SVline("        endcase\n      end\n") 
+
         return self.write_logic
 
     def gen_assigns(self):
-        self.assigns = "  // To APB\n  assign PREADY  = 1'b1;\n  assign PSLVERR = 1'b0;\n"
+        self.assigns = "  // To APB\n  assign o_PREADY  = 1'b1;\n  assign o_PSLVERR = 1'b0;\n"
 
         return self.assigns
