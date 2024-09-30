@@ -125,6 +125,8 @@ module register_bank #(
 
   // Read logic
   always_comb begin
+    o_PRDATA = 'h0;
+
     case (i_PADDR)
       `ADDRESS_ADDR:
         o_PRDATA = r_addr;
@@ -135,7 +137,6 @@ module register_bank #(
       `ADDRESS_DT_TRA:
         o_PRDATA = r_dt_tra;
       `ADDRESS_DT_MX: begin
-        o_PRDATA = 'h0;
         o_PRDATA[7:0] = r_dt_mx.BYTE_0;
       end
       `ADDRESS_READ_REG:

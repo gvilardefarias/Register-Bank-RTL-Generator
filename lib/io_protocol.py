@@ -59,7 +59,9 @@ class APB_protocol(IO_protocol):
         return self.IO
 
     def gen_read_logic(self):
-        self.read_logic = "  // Read logic\n  always_comb begin\n    case (i_PADDR)\n"
+        self.read_logic = "  // Read logic\n  always_comb begin\n"
+        self.read_logic += "    o_PRDATA = 'h0;\n\n"
+        self.read_logic += "    case (i_PADDR)\n"
 
         for register in self.registers:
             if not register.only_write():
@@ -68,7 +70,6 @@ class APB_protocol(IO_protocol):
                     self.read_logic += "        o_PRDATA = r_" + register.name + ";\n"
                 else:
                     self.read_logic += "      `ADDRESS_" + register.name.upper() +": begin\n"
-                    self.read_logic += "        o_PRDATA = 'h0;\n"
                     for bit in register.bits:
                         if "R" in bit.access_type:
                             self.read_logic += "        o_PRDATA[" + bit.get_pos() + "]" + " = r_" + register.name + "." + bit.name + ";\n"
