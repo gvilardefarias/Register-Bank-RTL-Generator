@@ -64,8 +64,9 @@ class RB_generator():
             self.writeFf = self.io_protocol.gen_write_logic()
         else:
             self.writeFf = writeFf
+        self.write_logic  = ""
         wc_write = ""
-        n_write = ""
+        c_write = ""
 
         for reg in self.registers:
             for bit in reg.bits:
@@ -74,12 +75,12 @@ class RB_generator():
                         wc_write += "      if(i_" + bit.name.lower() + ")\n"
                         wc_write += "        r_" + reg.name + "." + bit.name + " <= i_" + bit.name.lower() + ";\n"
                     else:
-                        n_write += "      r_" + reg.name + "." + bit.name + " <= i_" + bit.name.lower() + ";\n"
+                        c_write += "      r_" + reg.name + "." + bit.name + " <= i_" + bit.name.lower() + ";\n"
 
-        if n_write != "":
-            self.write_logic = "\n" + n_write + "\n"
+        if c_write != "":
+            self.write_logic = "\n" + c_write
         if wc_write != "":
-            self.write_logic += wc_write + "\n"
+            self.write_logic += "\n" + wc_write 
         
         self.writeFf.add_back_body_SVline(self.write_logic)
 

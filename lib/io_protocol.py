@@ -67,12 +67,12 @@ class APB_protocol(IO_protocol):
             if not register.only_write():
                 if register.all_read():
                     self.read_logic += "      `ADDRESS_" + register.name.upper() +":\n"
-                    self.read_logic += "        o_PRDATA = r_" + register.name + ";\n"
+                    self.read_logic += "        o_PRDATA[" + str(register.size-1) + ":0] = r_" + register.name + ";\n"
                 else:
                     self.read_logic += "      `ADDRESS_" + register.name.upper() +": begin\n"
                     for bit in register.bits:
                         if "R" in bit.access_type:
-                            self.read_logic += "        o_PRDATA[" + bit.get_pos() + "]" + " = r_" + register.name + "." + bit.name + ";\n"
+                            self.read_logic += "        o_PRDATA[" + bit.get_pos() + "] = r_" + register.name + "." + bit.name + ";\n"
                     self.read_logic += "      end\n"
         self.read_logic += "      default:\n        o_PRDATA = 'h0;\n"
         self.read_logic += "    endcase\n  end\n"
