@@ -30,17 +30,19 @@ class IO_protocol(ABC):
 
 
 class APB_protocol(IO_protocol):
-    def __init__(self, registers = None, addr_width = 12, data_width = 32):
+    def __init__(self, registers = None, addr_width = 12, data_width = 32, pready = False):
         self.addr_width = addr_width
         self.data_width = data_width
+        self.pready = pready
+        self.params_sv = ""
 
         super().__init__(registers)
 
     def gen_params(self):
-        self.params = "  APB_ADDR_WIDTH = " + str(self.addr_width) + ",\n"
-        self.params += "  APB_DATA_WIDTH = " + str(self.data_width)
+        self.params_sv = "  APB_ADDR_WIDTH = " + str(self.addr_width) + ",\n"
+        self.params_sv += "  APB_DATA_WIDTH = " + str(self.data_width)
 
-        return self.params
+        return self.params_sv
 
     def gen_IO(self):
         self.IO  = "  // APB IO\n"
@@ -52,9 +54,12 @@ class APB_protocol(IO_protocol):
         self.IO += "  input  logic                      i_PSEL,\n"
         self.IO += "  input  logic                      i_PENABLE,\n"
         self.IO += "   \n"
-        self.IO += "  output logic [APB_DATA_WIDTH-1:0] o_PRDATA,\n"
-        self.IO += "  output logic                      o_PREADY,\n"
-        self.IO += "  output logic                      o_PSLVERR"
+
+        if self.pready:
+            self.IO += "  output logic [APB_DATA_WIDTH-1:0] o_PRDATA,\n"
+            self.IO += "  output logic                      o_PREADY"
+        else:
+            self.IO += "  output logic [APB_DATA_WIDTH-1:0] o_PRDATA"
 
         return self.IO
 
@@ -87,7 +92,15 @@ class APB_protocol(IO_protocol):
         self.write_logic.add_back_body_SVline("      if (i_PSEL && i_PENABLE && i_PWRITE) begin\n        case (i_PADDR)\n")
         for register in self.registers:
             # Reset
-            self.write_logic.add_reset_SVline("      r_" + register.name + " <= 'h0;\n")
+            for bit in register.bits:
+                if bit.reset_value[:2] == "0x":
+                    self.write_logic.add_reset_SVline("      r_" + register.name + "." + bit.name + " <= 'h" + bit.reset_value[2:] + ";\n")
+                else:
+                    try:
+                        self.write_logic.add_reset_SVline("      r_" + register.name + "." + bit.name + " <= 'd" + str(int(bit.reset_value)) + ";\n")
+                    except:
+                        self.write_logic.add_reset_SVline("      r_" + register.name + "." + bit.name + " <= " + bit.reset_value + ";\n")
+            self.write_logic.add_reset_SVline("\n")
 
             # Bit write operation
             if register.only_write() and register.size == self.data_width:
@@ -96,17 +109,25 @@ class APB_protocol(IO_protocol):
             elif not register.only_read():
                 self.write_logic.add_back_body_SVline("          `ADDRESS_" + register.name.upper() +":")
                 self.write_logic.add_back_body_SVline(" begin\n")
+
                 for bit in register.bits:
                     if 'WC' in bit.access_type:
                         self.write_logic.add_back_body_SVline("            r_" + register.name + "." + bit.name + " <= i_PWDATA[" + bit.get_pos() + "] ? 1'b0:r_" + register.name + "." + bit.name + ";\n")
+                    elif 'WS' in bit.access_type:
+                        self.write_logic.add_back_body_SVline("            r_" + register.name + "." + bit.name + " <= i_PWDATA[" + bit.get_pos() + "] ? 1'b1:r_" + register.name + "." + bit.name + ";\n")
                     elif 'W' in bit.access_type:
                         self.write_logic.add_back_body_SVline("            r_" + register.name + "." + bit.name + " <= i_PWDATA[" + bit.get_pos() + "];\n")
+
                 self.write_logic.add_back_body_SVline("          end\n")
+
         self.write_logic.add_back_body_SVline("        endcase\n      end\n") 
 
         return self.write_logic
 
     def gen_assigns(self):
-        self.assigns = "  // To APB\n  assign o_PREADY  = 1'b1;\n  assign o_PSLVERR = 1'b0;\n"
+        if self.pready:
+            self.assigns = "  // To APB\n  assign o_PREADY  = 1'b1;\n"
+        else:
+            self.assigns = ""
 
         return self.assigns

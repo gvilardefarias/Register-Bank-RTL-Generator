@@ -1,20 +1,7 @@
-Register Address,Register Name,Bit Name,Position Bit,Access,From Controller,To Controller,Functional Description
-0,addr,TBA,31,R W,0,1,Type of address
-0,addr,reserved,30:7,R,0,0,
-0,addr,SLVADDR,6:0,R W,0,1,Slave address
-4,status,REC,2,R,0,1,Byte received
-4,status,TRA,1,R WC,1,0,Byte transmited
-4,status,NAK,0,R WC,0,0,Nack response
-8,mask,RECE,2,R W,0,0,Byte received Mask
-8,mask,TRAE,1,R W,0,0,Byte transmited Mask
-8,mask,NAKE,0,R W,0,0,Nack response Mask
-12,dt_rcv,BYTE_2,23:16,W,0,1,Byte received
-12,dt_rcv,BYTE_1,15:8,W,0,1,Byte received
-12,dt_rcv,BYTE_0,7:0,W,0,0,Byte received
-16,dt_tra,BYTE_2,23:16,R,1,0,Byte to be transmitted
-16,dt_tra,BYTE_1,15:8,R,1,0,Byte to be transmitted
-16,dt_tra,BYTE_0,7:0,R,0,0,Byte to be transmitted
-20,dt_mx,BYTE_1,15:8,W,0,0,Byte write
-20,dt_mx,BYTE_0,7:0,R,0,0,Byte read
-24,write_reg,data,31:0,W,0,0,Data
-28,read_reg,data,31:0,R,0,0,Data
+Addr,Reg Name,Fields,Position,Field access,External access,Field Description
+0,addr,TBA,31,R W,R,Type of address
+0,addr,reserved,30:7,R,0,
+0,addr,SLVADDR,6:0,R W,R,Slave address
+4,status,REC,2,R,0,Byte received
+4,status,TRA,1,R WC,W,Byte transmited
+4,status,NAK,0,R WC,0,Nack response

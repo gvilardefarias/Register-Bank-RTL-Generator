@@ -13,7 +13,7 @@ class Register():
     
     def only_write(self):
         for bit in self.bits:
-            if 'R' in bit.access_type or 'WC' in bit.access_type:
+            if 'R' in bit.access_type or 'WC' in bit.access_type or 'WS' in bit.access_type:
                 return False
         
         return True
@@ -27,18 +27,19 @@ class Register():
 
     def only_read(self):
         for bit in self.bits:
-            if 'W' in bit.access_type or 'WC' in bit.access_type:
+            if 'W' in bit.access_type or 'WC' in bit.access_type or 'WS' in bit.access_type:
                 return False
         
         return True
 
 class Bit():
-    def __init__(self, name, access_type, pos, from_cont, to_cont, description = ''):
+    def __init__(self, name, access_type, pos, from_cont, to_cont, reset_value, description = ''):
         self.name = name
         self.access_type = access_type
         self.pos = pos
         self.from_cont = from_cont
         self.to_cont = to_cont
+        self.reset_value = reset_value
         self.description = description
 
         if len(pos) == 1:
@@ -86,7 +87,10 @@ class FlipFlop():
         self.sv_code  = "  // " + self.name + "\n"
         self.sv_code += "  always_ff @(posedge HCLK, negedge HRESETn) begin\n"
         self.sv_code += "    if(!HRESETn) begin\n" 
-        self.sv_code += self.reset
+        if self.reset[-1] == '\n':
+            self.sv_code += self.reset[:-1]
+        else:
+            self.sv_code += self.reset
         self.sv_code += "    end\n    else begin\n"
         self.sv_code += self.body
         self.sv_code += "    end\n  end\n"

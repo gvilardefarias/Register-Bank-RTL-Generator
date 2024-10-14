@@ -50,8 +50,9 @@ class RB_generator():
 
         if self.IO != "":
             self.IO = "  // Controller IO\n" + self.IO[:-2]
-        
-        self.IO = self.io_protocol.gen_IO() + ",\n\n" + self.IO
+            self.IO = self.io_protocol.gen_IO() + ",\n\n" + self.IO
+        else:
+            self.IO = self.io_protocol.gen_IO() 
         
         return self.IO
 
@@ -90,12 +91,30 @@ class RB_generator():
         self.defines = ""
 
         for reg in self.registers:
-            self.defines += "`define ADDRESS_" + reg.name.upper() + "  " + str(self.io_protocol.addr_width) + "'d" + reg.address + "\n" 
+            self.defines += "`define ADDRESS_" + reg.name.upper() + "  " + str(self.io_protocol.addr_width) + "'h" + reg.address + "\n" 
 
         return self.defines
 
     def gen_params(self):
-        self.params = self.io_protocol.gen_params()
+        self.params = "  // APB params\n"
+        self.params += self.io_protocol.gen_params()
+
+        reg_params = set()
+        for reg in self.registers:
+            for bit in reg.bits:
+                if bit.reset_value[:2] != "0x":
+                    try:
+                        int(bit.reset_value)
+                    except:
+                        reg_params.add(bit.reset_value)
+
+        if reg_params:
+            self.params += ",\n\n  // Registers params\n"
+
+        for i, param in enumerate(reg_params):
+            if i != 0:
+                self.params += ",\n"
+            self.params += "  " + param + " = 0"
 
         return self.params
 
@@ -135,7 +154,7 @@ class RB_generator():
         self.sv_code += self.gen_signals() + "\n"
         self.sv_code += str(self.gen_write_logic()) + "\n"
         self.sv_code += self.gen_read_logic() + "\n"
-        self.sv_code += self.gen_assigns() + "\n"
+        self.sv_code += self.gen_assigns()
         self.sv_code += "endmodule"
 
         return self.sv_code
