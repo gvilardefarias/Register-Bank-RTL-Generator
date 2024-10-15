@@ -126,9 +126,14 @@ class RB_generator():
             self.signals += "  struct packed {\n"
             for bit in reg.bits:
                 if len(bit.pos) == 1:
-                    self.signals += "    logic       " + bit.name + ";  //" + bit.description + "\n"
+                    self.signals += "    logic       " + bit.name + ";"
                 else:
-                    self.signals += "    logic [" + str(bit.size - 1) + ":0] " + bit.name + ";  //" + bit.description + "\n"
+                    self.signals += "    logic [" + str(bit.size - 1) + ":0] " + bit.name + ";"
+                
+                if bit.description != "":
+                    self.signals += "  // " + bit.description 
+                self.signals += "\n"
+
             self.signals += "  } r_" + reg.name + ";\n\n"
         
         return self.signals
