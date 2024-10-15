@@ -19,12 +19,14 @@ class Input_parser(ABC):
         pass
 
 class CSV_parser(Input_parser):
-    def __init__(self, file_name):
+    def __init__(self, file_name, delimiter = ","):
         super().__init__(file_name)
+
+        self.delimiter = delimiter
 
     def open_input_file(self):
         input_file = open(self.file_name)
-        self.csvDict = csv.DictReader(input_file)
+        self.csvDict = csv.DictReader(input_file, delimiter = self.delimiter)
 
     def create_registers(self):
         # Group registers by address

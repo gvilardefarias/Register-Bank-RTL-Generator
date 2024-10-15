@@ -2,12 +2,12 @@ from lib.input_parser import CSV_parser
 from lib.io_protocol import APB_protocol
 
 class RB_generator():
-    def __init__(self, input_file_name, parser = None, io_protocol = None, registers = None, name = "register_bank"):
+    def __init__(self, input_file_name, parser = None, io_protocol = None, registers = None, name = "register_bank", delimiter = ","):
         self.name = name
         self.registers = registers
 
         if parser == None:
-            self.parser = CSV_parser(input_file_name)
+            self.parser = CSV_parser(input_file_name, delimiter = delimiter)
         else:
             parser.set_file_name(input_file_name)
 
