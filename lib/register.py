@@ -24,6 +24,13 @@ class Register():
                 return False
 
         return True
+    
+    def has_read(self):
+        for bit in self.bits:
+            if 'R' in bit.access_type:
+                return True
+        
+        return False
 
     def only_read(self):
         for bit in self.bits:

@@ -69,7 +69,7 @@ class APB_protocol(IO_protocol):
         self.read_logic += "    case (i_PADDR)\n"
 
         for register in self.registers:
-            if not register.only_write():
+            if register.has_read():
                 if register.all_read():
                     self.read_logic += "      `ADDRESS_" + register.name.upper() +":\n"
                     self.read_logic += "        o_PRDATA[" + str(register.size-1) + ":0] = r_" + register.name + ";\n"
@@ -112,9 +112,19 @@ class APB_protocol(IO_protocol):
 
                 for bit in register.bits:
                     if 'WC' in bit.access_type:
-                        self.write_logic.add_back_body_SVline("            r_" + register.name + "." + bit.name + " <= i_PWDATA[" + bit.get_pos() + "] ? 1'b0:r_" + register.name + "." + bit.name + ";\n")
+                        if bit.size == 1:
+                            self.write_logic.add_back_body_SVline("            r_" + register.name + "." + bit.name + " <= i_PWDATA[" + bit.get_pos() + "] ? 1'b0:r_" + register.name + "." + bit.name + ";\n")
+                        else:
+                            for i in range(bit.pos[1], bit.pos[0]+1):
+                                bit_idx = str(i - bit.pos[1])
+                                self.write_logic.add_back_body_SVline("            r_" + register.name + "." + bit.name + "[" + bit_idx + "]" + " <= i_PWDATA[" + str(i) + "] ? 1'b0:r_" + register.name + "." + bit.name + "[" + bit_idx + "]" + ";\n")
                     elif 'WS' in bit.access_type:
-                        self.write_logic.add_back_body_SVline("            r_" + register.name + "." + bit.name + " <= i_PWDATA[" + bit.get_pos() + "] ? 1'b1:r_" + register.name + "." + bit.name + ";\n")
+                        if bit.size == 1:
+                            self.write_logic.add_back_body_SVline("            r_" + register.name + "." + bit.name + " <= i_PWDATA[" + bit.get_pos() + "] ? 1'b1:r_" + register.name + "." + bit.name + ";\n")
+                        else:
+                            for i in range(bit.pos[1], bit.pos[0]+1):
+                                bit_idx = str(i - bit.pos[1])
+                                self.write_logic.add_back_body_SVline("            r_" + register.name + "." + bit.name + "[" + bit_idx + "]" + " <= i_PWDATA[" + str(i) + "] ? 1'b1:r_" + register.name + "." + bit.name + "[" + bit_idx + "]" + ";\n")
                     elif 'W' in bit.access_type:
                         self.write_logic.add_back_body_SVline("            r_" + register.name + "." + bit.name + " <= i_PWDATA[" + bit.get_pos() + "];\n")
 

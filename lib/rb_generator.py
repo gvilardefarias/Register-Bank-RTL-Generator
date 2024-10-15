@@ -93,6 +93,7 @@ class RB_generator():
         for reg in self.registers:
             self.defines += "`define ADDRESS_" + reg.name.upper() + "  " + str(self.io_protocol.addr_width) + "'h" + reg.address + "\n" 
 
+        self.defines = self.defines[:-1]
         return self.defines
 
     def gen_params(self):
