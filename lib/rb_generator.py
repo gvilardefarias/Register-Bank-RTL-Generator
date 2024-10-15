@@ -31,10 +31,10 @@ class RB_generator():
             for bit in reg.bits:
                 if bit.from_cont:
                     if len(bit.pos) == 1:
-                        self.IO += "  input  logic " + 21*" " + "i_" + bit.name.lower() + ",\n" 
+                        self.IO += "  input  logic " + 21*" " + "i_" + reg.name.lower() + "_" + bit.name.lower() + ",\n" 
                     else:
                         strSize = "[" + str(bit.size - 1) + ":0] "
-                        self.IO += "  input  logic " + (21-len(strSize))*" " + strSize + "i_" + bit.name.lower() + ",\n" 
+                        self.IO += "  input  logic " + (21-len(strSize))*" " + strSize + "i_" + reg.name.lower() + "_" + bit.name.lower() + ",\n" 
         
         if self.IO != "":
             self.IO += "\n"
@@ -43,10 +43,10 @@ class RB_generator():
             for bit in reg.bits:
                 if bit.to_cont:
                     if len(bit.pos) == 1:
-                        self.IO += "  output logic " + 21*" " + "o_" + bit.name.lower() + ",\n" 
+                        self.IO += "  output logic " + 21*" " + "o_" + reg.name.lower() + "_" + bit.name.lower() + ",\n" 
                     else:
                         strSize = "[" + str(bit.size - 1) + ":0] "
-                        self.IO += "  output logic " + (21-len(strSize))*" " + strSize + "o_" + bit.name.lower() + ",\n" 
+                        self.IO += "  output logic " + (21-len(strSize))*" " + strSize + "o_" + reg.name.lower() + "_" + bit.name.lower() + ",\n" 
 
         if self.IO != "":
             self.IO = "  // Controller IO\n" + self.IO[:-2]
@@ -73,10 +73,10 @@ class RB_generator():
             for bit in reg.bits:
                 if bit.from_cont:
                     if "WC" in bit.access_type:
-                        wc_write += "      if(i_" + bit.name.lower() + ")\n"
-                        wc_write += "        r_" + reg.name + "." + bit.name + " <= i_" + bit.name.lower() + ";\n"
+                        wc_write += "      if(i_" + reg.name.lower() + "_" + bit.name.lower() + ")\n"
+                        wc_write += "        r_" + reg.name + "." + bit.name + " <= i_" + reg.name.lower() + "_" + bit.name.lower() + ";\n"
                     else:
-                        c_write += "      r_" + reg.name + "." + bit.name + " <= i_" + bit.name.lower() + ";\n"
+                        c_write += "      r_" + reg.name + "." + bit.name + " <= i_" + reg.name.lower() + "_" + bit.name.lower() + ";\n"
 
         if c_write != "":
             self.write_logic = "\n" + c_write
@@ -144,7 +144,7 @@ class RB_generator():
         for reg in self.registers:
             for bit in reg.bits:
                 if bit.to_cont:
-                    self.assigns += "  assign o_" + bit.name.lower() + " = r_" + reg.name + "." + bit.name + ";\n"
+                    self.assigns += "  assign o_" + reg.name.lower() + "_" + bit.name.lower() + " = r_" + reg.name + "." + bit.name + ";\n"
 
         if self.assigns != "":
             self.assigns = "  // To controller\n" + self.assigns + "\n"
