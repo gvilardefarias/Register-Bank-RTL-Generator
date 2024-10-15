@@ -54,7 +54,7 @@ class CSV_parser(Input_parser):
             for row in addrMap[reg_addr]:
                 # Create Register if it doesnt exist
                 if reg_name == None:
-                    reg_name = row['Reg Name']
+                    reg_name = row['Reg Name'].lower()
 
                     if reg_addr[:2] == "0x":
                         reg_addr = reg_addr[2:]

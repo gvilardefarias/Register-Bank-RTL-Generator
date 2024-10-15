@@ -18,6 +18,13 @@ class Register():
         
         return True
 
+    def all_write(self):
+        for bit in self.bits:
+            if not 'W' in bit.access_type:
+                return False
+
+        return True
+    
     def all_read(self):
         for bit in self.bits:
             if not 'R' in bit.access_type:

@@ -103,9 +103,15 @@ class APB_protocol(IO_protocol):
             self.write_logic.add_reset_SVline("\n")
 
             # Bit write operation
-            if register.only_write() and register.size == self.data_width:
+            if register.all_write() and register.size == self.data_width:
                 self.write_logic.add_back_body_SVline("          `ADDRESS_" + register.name.upper() +":")
                 self.write_logic.add_back_body_SVline("\n            r_" + register.name + " <= i_PWDATA;\n")
+            elif register.all_write():
+                self.write_logic.add_back_body_SVline("          `ADDRESS_" + register.name.upper() +":")
+                if register.size == 1:
+                    self.write_logic.add_back_body_SVline("\n            r_" + register.name + " <= i_PWDATA[0];\n")
+                else:
+                    self.write_logic.add_back_body_SVline("\n            r_" + register.name + " <= i_PWDATA[" + str(register.size - 1) + ":0];\n")
             elif not register.only_read():
                 self.write_logic.add_back_body_SVline("          `ADDRESS_" + register.name.upper() +":")
                 self.write_logic.add_back_body_SVline(" begin\n")
